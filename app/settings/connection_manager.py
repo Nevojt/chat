@@ -6,7 +6,7 @@ from fastapi import WebSocket
 from app.settings.database import async_session_maker
 from app.models import models
 from sqlalchemy import insert
-from typing import List, Dict, Tuple
+from typing import List, Dict, Optional, Tuple
 
 
 logging.basicConfig(filename='_log/connect_manager.log', format='%(asctime)s - %(levelname)s - %(message)s')
@@ -162,8 +162,8 @@ class ConnectionManager:
         # Send the message only to users in the specified room
         for user_id, (connection, _, _, user_room, _) in self.user_connections.items():
             if user_room == rooms:
-                await connection.send_text(message_json)   
-
+                await connection.send_text(message_json) 
+                
     @staticmethod
     async def add_file_to_database(fileUrl: str, rooms: str, receiver_id: int):
         """
@@ -171,6 +171,68 @@ class ConnectionManager:
         """
         async with async_session_maker() as session:
             stmt = insert(models.Socket).values(fileUrl=fileUrl, rooms=rooms, receiver_id=receiver_id)
+            result =  await session.execute(stmt)
+            await session.commit()
+            
+            message_id = result.inserted_primary_key[0]
+            return message_id
+                
+    async def broadcast_reply(self, file: Optional[str], message: Optional[str],
+                                rooms: str, receiver_id: int,
+                                id_return: int, 
+                                user_name: str, avatar: str, created_at: str, 
+                                verified: bool, add_to_db: bool):
+        """
+        Sends a message to all active WebSocket connections. If `add_to_db` is True, it also
+        adds the message to the database.
+        """
+        
+
+        # Встановіть часовий пояс UTC
+        timezone = pytz.timezone('UTC')
+
+        # Отримайте поточний час у форматі ISO 8601 з UTC часовим поясом
+        current_time_utc = datetime.now(timezone).isoformat()
+        file_id = None
+        vote_count = 0
+        # message = None
+        # file = None
+
+        if add_to_db:
+            file_id = await self.add_reply_to_database(file, message, rooms, receiver_id, id_return)
+
+        message_data = {
+            
+            "created_at": current_time_utc,
+            "receiver_id": receiver_id,
+            "id": file_id,
+            "message": message if message is not None else None,
+            "fileUrl": file if file is not None else None,
+            "user_name": user_name,
+            "verified": verified,
+            "avatar": avatar,
+            "vote": vote_count,
+            "id_return": id_return
+                
+        }
+
+        message_json = json.dumps(message_data, ensure_ascii=False)
+
+        # Send the message only to users in the specified room
+        for user_id, (connection, _, _, user_room, _) in self.user_connections.items():
+            if user_room == rooms:
+                await connection.send_text(message_json)
+
+    @staticmethod
+    async def add_reply_to_database(fileUrl: Optional[str], message: Optional[str], 
+                                    rooms: str, receiver_id: int, id_message: int):
+        """
+        Adds a message to the database asynchronously.
+        """
+        async with async_session_maker() as session:
+            stmt = insert(models.Socket).values(fileUrl=fileUrl, message=message, 
+                                                rooms=rooms, receiver_id=receiver_id,
+                                                id_return=id_message)
             result =  await session.execute(stmt)
             await session.commit()
             

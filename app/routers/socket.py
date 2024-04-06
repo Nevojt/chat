@@ -119,11 +119,15 @@ async def websocket_endpoint(
             elif 'reply' in data:
                 reply_data = data['reply']
                 original_message_id = reply_data['original_message_id']
-
-                censored_message = censor_message(reply_data['message'], banned_words)
+                if reply_data['message'] != None:
+                    censored_message = censor_message(reply_data['message'], banned_words)
+                else:
+                    censored_message = None
+                file_url = reply_data['fileUrl']
                 current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                await manager.broadcast(
+                await manager.broadcast_reply(
                                     message=censored_message,
+                                    file=file_url,
                                     rooms=room,
                                     created_at=current_time,
                                     receiver_id=user.id,
