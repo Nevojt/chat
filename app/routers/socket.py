@@ -23,7 +23,7 @@ router = APIRouter(
 manager = ConnectionManager()
 
 
-@router.websocket("/ws/{room}")
+@router.websocket("/test_chat/{room}")
 async def websocket_endpoint(
     websocket: WebSocket,
     room: str,

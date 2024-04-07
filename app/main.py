@@ -6,9 +6,9 @@ from .routers import socket
 
 app = FastAPI(
     docs_url="/docs",
-    title="Chat",
+    title="Chat TEST",
     version="0.1.0",
-    description="Chat API",
+    description="Test Chat API",
     
 )
 
