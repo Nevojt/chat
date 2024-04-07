@@ -177,9 +177,9 @@ class ConnectionManager:
             message_id = result.inserted_primary_key[0]
             return message_id
                 
-    async def broadcast_reply(self, file: Optional[str], message: Optional[str],
+    async def broadcast(self, file: Optional[str], message: Optional[str],
                                 rooms: str, receiver_id: int,
-                                id_return: int, 
+                                id_return: Optional[int], 
                                 user_name: str, avatar: str, created_at: str, 
                                 verified: bool, add_to_db: bool):
         """
@@ -195,8 +195,7 @@ class ConnectionManager:
         current_time_utc = datetime.now(timezone).isoformat()
         file_id = None
         vote_count = 0
-        # message = None
-        # file = None
+
 
         if add_to_db:
             file_id = await self.add_reply_to_database(file, message, rooms, receiver_id, id_return)
@@ -212,7 +211,7 @@ class ConnectionManager:
             "verified": verified,
             "avatar": avatar,
             "vote": vote_count,
-            "id_return": id_return
+            "id_return": id_return if id_return is not None else None
                 
         }
 

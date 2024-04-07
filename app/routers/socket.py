@@ -116,16 +116,25 @@ async def websocket_endpoint(
                     await websocket.send_json({"message": f"Error processing deleted: {e}"})
                     
             # Block reply message     
-            elif 'reply' in data:
-                reply_data = data['reply']
-                original_message_id = reply_data['original_message_id']
-                if reply_data['message'] != None:
-                    censored_message = censor_message(reply_data['message'], banned_words)
+            elif 'send' in data:
+                message_data = data['send']
+                original_message_id = message_data['original_message_id']
+                original_message = message_data['message']
+                file_url = message_data['fileUrl']
+                
+                if original_message != None:
+                    censored_message = censor_message(original_message, banned_words)
                 else:
                     censored_message = None
-                file_url = reply_data['fileUrl']
+                
                 current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                await manager.broadcast_reply(
+                if censored_message != original_message:
+                    warning_message = {
+                        "type": "system_warning",
+                        "content": "Ваше повідомлення було модифіковано, оскільки воно містило нецензурні слова."
+                    }  
+                    await websocket.send_json(warning_message)
+                await manager.broadcast(
                                     message=censored_message,
                                     file=file_url,
                                     rooms=room,
@@ -136,47 +145,11 @@ async def websocket_endpoint(
                                     verified=user.verified,
                                     id_return=original_message_id,
                                     add_to_db=True)
-            elif 'fileUrl' in data:
-                file_url = data['fileUrl']
-                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                await manager.broadcast_file(
-                                    file=file_url,
-                                    rooms=room,
-                                    created_at=current_time,
-                                    receiver_id=user.id,
-                                    user_name=user.user_name,
-                                    avatar=user.avatar,
-                                    verified=user.verified,
-                                    add_to_db=True
-                                )
-                
+
                 
             # Blok following typing message
             elif 'type' in data:   
                 await manager.notify_users_typing(room, user.user_name, user.id)
-            
-            # Block send message     
-            else:
-                original_message = data['message']
-                censored_message = censor_message(original_message, banned_words)
-                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                
-                if censored_message != original_message:
-                    warning_message = {
-                        "type": "system_warning",
-                        "content": "Ваше повідомлення було модифіковано, оскільки воно містило нецензурні слова."
-                    }  
-                    await websocket.send_json(warning_message)
-                    
-                await manager.broadcast(censored_message,
-                                        rooms=room,
-                                        created_at=current_time,
-                                        receiver_id=user.id,
-                                        user_name=user.user_name,
-                                        avatar=user.avatar,
-                                        verified=user.verified,
-                                        id_return=None,
-                                        add_to_db=True)
                 
             
     except WebSocketDisconnect:
@@ -189,15 +162,8 @@ async def websocket_endpoint(
         await manager.send_active_users(room)
         
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        await manager.broadcast(f"User -> {user.user_name} left the chat {room}",
-                                rooms=room,
-                                created_at=current_time,
-                                receiver_id=user.id,
-                                user_name=user.user_name,
-                                avatar=user.avatar,
-                                verified=user.verified,
-                                id_return=None,
-                                add_to_db=False)
+        await websocket.send_text(f"User -> {user.user_name} left the chat {room}")
+                                
     finally:
         await session.close()
         print("Session closed")

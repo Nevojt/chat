@@ -19,7 +19,8 @@ logger = logging.getLogger(__name__)
 
 
 
-async def fetch_last_messages(rooms: str, session: AsyncSession) -> List[schemas.SocketModel]:
+async def fetch_last_messages(rooms: str, 
+                              session: AsyncSession) -> List[schemas.SocketModel]:
     """
     This function fetches the last 50 messages in a given room and returns them as a list of SocketModel objects.
 
