@@ -46,7 +46,7 @@ class ConnectionManager:
         """
         try:
             # Якщо транзакція вже активна, просто додаємо повідомлення без початку нової транзакції
-            new_reply = models.Socket(
+            new_reply = models.SocketTest(
                 message=reply_message,
                 receiver_id=user_id,
                 rooms=room,
@@ -115,7 +115,7 @@ class ConnectionManager:
         Adds a message to the database asynchronously.
         """
         async with async_session_maker() as session:
-            stmt = insert(models.Socket).values(message=message, rooms=rooms, receiver_id=receiver_id, id_return=id_message)
+            stmt = insert(models.SocketTest).values(message=message, rooms=rooms, receiver_id=receiver_id, id_return=id_message)
             result =  await session.execute(stmt)
             await session.commit()
             
@@ -170,7 +170,7 @@ class ConnectionManager:
         Adds a message to the database asynchronously.
         """
         async with async_session_maker() as session:
-            stmt = insert(models.Socket).values(fileUrl=fileUrl, rooms=rooms, receiver_id=receiver_id)
+            stmt = insert(models.SocketTest).values(fileUrl=fileUrl, rooms=rooms, receiver_id=receiver_id)
             result =  await session.execute(stmt)
             await session.commit()
             
@@ -229,7 +229,7 @@ class ConnectionManager:
         Adds a message to the database asynchronously.
         """
         async with async_session_maker() as session:
-            stmt = insert(models.Socket).values(fileUrl=fileUrl, message=message, 
+            stmt = insert(models.SocketTest).values(fileUrl=fileUrl, message=message, 
                                                 rooms=rooms, receiver_id=receiver_id,
                                                 id_return=id_message)
             result =  await session.execute(stmt)
