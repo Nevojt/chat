@@ -10,7 +10,7 @@ from typing import List
 from app.models import models
 
 # Налаштування логування
-logging.basicConfig(filename='_log/func_vote.log', format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename='_log/func_socket.log', format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 
