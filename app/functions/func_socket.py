@@ -32,19 +32,19 @@ async def fetch_last_messages(rooms: str,
     List[schemas.SocketModel]: A list of SocketModel objects representing the last 50 messages in the room.
     """
     query = select(
-    models.Socket, 
+    models.SocketTest, 
     models.User, 
     func.coalesce(func.sum(models.Vote.dir), 0).label('votes')
     ).outerjoin(
-        models.Vote, models.Socket.id == models.Vote.message_id
+        models.Vote, models.SocketTest.id == models.Vote.message_id
     ).outerjoin( 
-        models.User, models.Socket.receiver_id == models.User.id
+        models.User, models.SocketTest.receiver_id == models.User.id
     ).filter(
-        models.Socket.rooms == rooms
+        models.SocketTest.rooms == rooms
     ).group_by(
-        models.Socket.id, models.User.id
+        models.SocketTest.id, models.User.id
     ).order_by(
-        desc(models.Socket.created_at)
+        desc(models.SocketTest.created_at)
     )
 
     result = await session.execute(query)
@@ -162,7 +162,7 @@ async def process_vote(vote: schemas.Vote, session: AsyncSession, current_user: 
         HTTPException: If an error occurs while processing the vote.
     """
     try:
-        result = await session.execute(select(models.Socket).filter(models.Socket.id == vote.message_id))
+        result = await session.execute(select(models.SocketTest).filter(models.SocketTest.id == vote.message_id))
         message = result.scalars().first()
         
         if not message:
@@ -225,7 +225,7 @@ async def change_message(id_message: int, message_update: schemas.SocketUpdate,
         HTTPException: If an error occurs while updating the message.
     """
     
-    query = select(models.Socket).where(models.Socket.id == id_message, models.Socket.receiver_id == current_user.id)
+    query = select(models.SocketTest).where(models.SocketTest.id == id_message, models.SocketTest.receiver_id == current_user.id)
     result = await session.execute(query)
     message = result.scalar()
 
@@ -257,7 +257,7 @@ async def delete_message(id_message: int,
     Raises:
         HTTPException: If an error occurs while deleting the message.
     """
-    query = select(models.Socket).where(models.Socket.id == id_message, models.Socket.receiver_id == current_user.id)
+    query = select(models.SocketTest).where(models.SocketTest.id == id_message, models.SocketTest.receiver_id == current_user.id)
     result = await session.execute(query)
     message = result.scalar()
 
