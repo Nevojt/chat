@@ -5,7 +5,7 @@ from .routers import socket
 
 
 app = FastAPI(
-    docs_url="/ws/docs",
+    docs_url="/test_chat/docs",
     title="Chat TEST",
     version="0.1.0",
     description="Test Chat API",
