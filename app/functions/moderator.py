@@ -1,6 +1,8 @@
 import csv
 import string
 
+from app.AI import sayory
+
 
 
 def load_banned_words(filename):
@@ -29,3 +31,9 @@ def censor_message(message, banned_words):
     
     return ' '.join(censored_words)
 
+def tag_sayory(message):
+    sayory = "@sayory"
+    
+    for sayory in message:
+        if sayory == sayory:
+            return sayory
