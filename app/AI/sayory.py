@@ -12,19 +12,19 @@ client = AsyncOpenAI(
 async def ask_to_gpt(ask_to_chat: str) -> str:
     try:
         chat_completion = await client.chat.completions.create(
+            model="gpt-4o-mini",
             messages=[
                 {
-                    "role": "user",
-                    "content": ask_to_chat,
+                "role": "user",
+                "content": ask_to_chat,
                 }
             ],
-            model="gpt-4o-mini",
-            temperature=0.9,
-            max_tokens=200,
+            temperature=1,
+            max_tokens=256,
             top_p=1,
-            frequency_penalty=0.0,
-            presence_penalty=0.0,
-        )
+            frequency_penalty=0,
+            presence_penalty=0
+            )
         response = chat_completion.choices[0].model_dump()
         return response["message"]["content"]
     except Exception as e:
