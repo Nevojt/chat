@@ -3,8 +3,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     database_hostname: str
+    database_hostname_company: str
     database_port: str
     database_password: str
+    database_password_company: str
     database_name: str
     database_username: str
     secret_key: str
