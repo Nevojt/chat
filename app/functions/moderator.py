@@ -1,7 +1,6 @@
 import csv
 import string
 
-from app.AI import sayory
 
 
 
