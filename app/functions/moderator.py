@@ -31,6 +31,4 @@ def censor_message(message, banned_words):
     return ' '.join(censored_words)
 
 def tag_sayory(message):
-    if  message is None:
-        return
     return "@sayory" in message
